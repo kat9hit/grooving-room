@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Grooving Room">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Grooving Room - Drum Practice System v1.4</title>
+<style>
+:root{
+  --bg:#080808;--panel:#141414;--panel2:#101010;--orange:#ff6a00;
+  --yellow:#ffd400;--white:#f5f5f5;--muted:#929292;--line:#292929;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#080808;color:var(--white);overscroll-behavior:none;
+  font-family:Arial,"Noto Sans TC","Microsoft JhengHei",sans-serif}
+body{background:radial-gradient(circle at 50% -5%,#252525 0,#0d0d0d 34%,#080808 70%);-webkit-tap-highlight-color:transparent}
+button,input{font:inherit}
+button{-webkit-appearance:none;appearance:none;touch-action:manipulation}
+input[type="range"]{touch-action:pan-x}
+body{-webkit-text-size-adjust:100%;padding-bottom:env(safe-area-inset-bottom)}
+.wrap{width:min(980px,100%);margin:auto;padding:22px 18px calc(52px + env(safe-area-inset-bottom))}
+.brand{font-size:14px;font-weight:900;letter-spacing:2.5px;color:var(--orange)}
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin:20px 0 18px}
+h1{font-size:clamp(42px,8vw,78px);line-height:.9;letter-spacing:-3px;margin:0;font-weight:950}
+h1 .zh{display:block;color:var(--white);font-size:.52em;letter-spacing:1px;margin-top:9px}
+.streak{text-align:right}.streak b{display:block;font-size:28px;color:var(--yellow)}
+.streak small{color:var(--muted);letter-spacing:1px}
+.card{background:rgba(20,20,20,.94);border:1px solid var(--line);border-radius:22px;
+  padding:20px;margin:14px 0;box-shadow:0 15px 45px #0009}
+.topline{display:flex;justify-content:space-between;gap:12px;align-items:center;
+  color:var(--muted);font-size:12px;letter-spacing:1px;text-transform:uppercase}
+.accent{color:var(--orange);font-weight:900}
+.pattern{font-size:clamp(48px,10vw,92px);font-weight:950;letter-spacing:clamp(5px,2vw,14px);
+  text-align:center;margin:25px 0 12px;line-height:1}
+.pattern .r{color:var(--orange);text-shadow:0 0 18px #ff6a0066}
+.pattern .l{color:var(--yellow);text-shadow:0 0 18px #ffd40055}
+.beats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.beat{border:1px solid #333;border-radius:13px;padding:13px 8px;text-align:center;
+  color:#777;font-weight:900;transition:.08s}
+.beat span{display:block;font-size:12px;color:#555;margin-bottom:4px}
+.beat.active{background:#f2f2f2;color:#080808;transform:translateY(-2px);
+  box-shadow:0 0 22px #fff4}.beat.active span{color:#555}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.control{background:var(--panel2);border:1px solid #303030;border-radius:15px;padding:14px}
+.control-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.control label{color:var(--muted);font-size:12px;letter-spacing:1px}
+.control strong{font-size:27px}
+.range{width:100%;accent-color:var(--orange);cursor:pointer}
+.step-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.chip{background:#111;border:1px solid #333;-webkit-user-select:none;user-select:none;touch-action:manipulation;color:#aaa;border-radius:999px;
+  padding:8px 12px;min-width:54px;cursor:pointer;font-weight:800}
+.chip.selected{border-color:var(--orange);color:var(--orange);background:#19130e}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.btn{border:0;border-radius:14px;padding:16px;font-weight:950;font-size:16px;cursor:pointer;min-height:54px;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.btn:active{transform:scale(.985)}
+.start{background:var(--orange);color:#080808}.secondary{background:#272727;color:#fff}
+.timer{text-align:center;font-size:clamp(42px,8vw,62px);font-weight:950;margin:15px 0 9px;
+  font-variant-numeric:tabular-nums}
+.progress-label{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-bottom:6px}
+.progress{height:8px;background:#292929;border-radius:9px;overflow:hidden}
+.bar{height:100%;width:0;background:linear-gradient(90deg,var(--orange),var(--yellow));
+  transition:width .15s linear}
+.pattern-group{margin-top:16px}.group-title{font-size:12px;color:var(--muted);letter-spacing:1px;
+  font-weight:900;margin-bottom:8px}.patterns{display:flex;flex-wrap:wrap;gap:8px}
+.pbtn{background:#111;border:1px solid #333;-webkit-user-select:none;user-select:none;touch-action:manipulation;color:#ddd;padding:11px 15px;border-radius:999px;
+  cursor:pointer;font-weight:900;min-width:78px}
+.pbtn.selected{border-color:var(--orange);color:var(--orange);background:#17100b}
+.result{text-align:center;display:none;border-color:#5a350f}
+.result .mission{color:var(--orange);font-size:13px;letter-spacing:2px;font-weight:950}
+.result h2{font-size:34px;margin:9px 0}.result p{color:var(--muted);margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}
+.stat{background:#101010;border:1px solid #242424;border-radius:14px;padding:15px;text-align:center}
+.stat b{display:block;font-size:27px;color:var(--yellow);font-variant-numeric:tabular-nums}
+.stat small{display:block;color:var(--muted);margin-top:4px}
+.note{color:#666;font-size:11px;text-align:center;margin:13px 0 0}
+@media(max-width:600px){
+  .wrap{padding:16px 12px calc(34px + env(safe-area-inset-bottom))}
+  .brand{font-size:11px;letter-spacing:1.8px}
+  .hero{margin:16px 0 14px}
+  h1{font-size:clamp(42px,15vw,64px)}
+  .streak small{font-size:9px}
+  .card{margin:10px 0}
+  .pattern{font-size:clamp(44px,15vw,72px);letter-spacing:clamp(3px,2vw,10px)}
+  .beat{min-height:62px;display:flex;flex-direction:column;justify-content:center}
+  .chip,.pbtn{min-height:44px}
+  .range{height:36px}
+  .buttons{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom));z-index:5;background:rgba(8,8,8,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:8px;border-radius:18px;margin-left:-4px;margin-right:-4px}
+  .btn{min-height:56px}.card{padding:16px;border-radius:18px}
+  .controls{grid-template-columns:1fr}.hero{align-items:flex-start}
+  .streak b{font-size:22px}.pattern{margin:20px 0 10px}
+  .pbtn{flex:1;min-width:calc(25% - 6px);padding:10px 8px}
+}
+
+/* MEMBER ACCESS GATE */
+body.locked > .wrap{display:none}
+.lock-screen{
+  position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:radial-gradient(circle at 50% 20%,#252525 0,#0d0d0d 42%,#080808 78%);
+}
+.lock-card{
+  width:min(430px,100%);background:#141414;border:1px solid #292929;border-radius:24px;
+  padding:28px;box-shadow:0 20px 70px #000b;text-align:center;
+}
+.lock-mark{
+  width:82px;height:82px;margin:0 auto 18px;border-radius:22px;overflow:hidden;
+  background:#080808;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 28px #0008;
+}
+.lock-mark img{width:100%;height:100%;display:block;object-fit:cover}
+.lock-title{font-size:28px;font-weight:950;margin:0 0 7px}
+.lock-sub{color:#929292;font-size:13px;line-height:1.6;margin:0 0 20px}
+.lock-form{display:flex;gap:9px}
+.lock-input{
+  flex:1;min-width:0;background:#0d0d0d;border:1px solid #333;border-radius:13px;
+  color:#fff;padding:14px;font-size:16px;outline:none;
+}
+.lock-input:focus{border-color:#ff6a00}
+.lock-btn{
+  border:0;border-radius:13px;padding:0 18px;background:linear-gradient(135deg,#ff6a00,#ffd400);
+  color:#080808;font-weight:950;cursor:pointer;min-width:92px;
+}
+.lock-error{min-height:18px;color:#ff6a00;font-size:12px;margin-top:12px}
+
+</style>
+</head>
+<body class="locked">
+
+<script>
+/* =========================================================
+   GROOVING ROOM — 每月會員密碼只需要修改這一行
+   例如：const MEMBER_PASSWORD = "2026-10-GROOVE";
+   修改後重新 Commit / Publish，會員下個月就要輸入新密碼。
+
+   注意：GitHub Pages 是公開靜態網站，這是「會員便利門檻」，
+   不是真正的安全驗證；懂得查看網頁原始碼的人仍可能繞過它。
+   ========================================================= */
+const MEMBER_PASSWORD = "2026";
+const MEMBER_ACCESS_KEY = "grooving-room-member-access-v1";
+</script>
+
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-mark"><img src="./icon-192.png" alt="Grooving Room"></div>
+    <h2 class="lock-title">GROOVING ROOM</h2>
+    <p class="lock-sub">會員專屬練習系統<br>請輸入本月會員密碼</p>
+    <form class="lock-form" id="lockForm" autocomplete="off">
+      <input class="lock-input" id="memberPassword" type="password" inputmode="text"
+             placeholder="輸入會員密碼" aria-label="會員密碼" autocomplete="off">
+      <button class="lock-btn" type="submit">進入</button>
+    </form>
+    <div class="lock-error" id="lockError" aria-live="polite"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="brand">GROOVING ROOM — DRUM PRACTICE SYSTEM</div>
+  <div class="hero">
+    <h1><span class="zh">電鼓人</span></h1>
+    <div class="streak"><b>🔥 <span id="streak">0</span></b><small>DAY STREAK</small></div>
+  </div>
+
+  <section class="card">
+    <div class="topline"><span class="accent">TODAY'S MISSION</span><span id="status">READY</span></div>
+    <div class="pattern" id="pattern"></div>
+    <div class="beats" id="beats"></div>
+
+    <div class="controls">
+      <div class="control">
+        <div class="control-head"><label>BPM</label><strong id="bpmValue">70</strong></div>
+        <input id="bpm" class="range" type="range" min="50" max="200" step="1" value="70">
+        <div class="step-row">
+          <button class="chip" data-bpm="70">70 BPM</button>
+          <button class="chip" data-bpm="90">90 BPM</button>
+          <button class="chip" data-bpm="120">120 BPM</button>
+        </div>
+      </div>
+      <div class="control">
+        <div class="control-head"><label>PRACTICE TIME</label><strong><span id="timeValue">1:00</span></strong></div>
+        <div class="step-row">
+          <button class="chip time selected" data-min="1">1 min</button>
+          <button class="chip time" data-min="3">3 min</button>
+          <button class="chip time" data-min="5">5 min</button>
+          <button class="chip time" data-min="7">7 min</button>
+          <button class="chip time" data-min="9">9 min</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn secondary" id="reset">RESET</button>
+      <button class="btn start" id="start">▶ START</button>
+    </div>
+
+    <div class="timer" id="timer">1:00</div>
+    <div class="progress-label"><span>MISSION PROGRESS</span><span id="progressPct">0%</span></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </section>
+
+  <section class="card">
+    <div class="topline"><span>CHOOSE PATTERN</span><span>R = RIGHT / L = LEFT</span></div>
+    <div class="pattern-group">
+      <div class="group-title">LEVEL 1</div><div class="patterns" id="level1"></div>
+    </div>
+    <div class="pattern-group">
+      <div class="group-title">LEVEL 2</div><div class="patterns" id="level2"></div>
+    </div>
+    <div class="pattern-group">
+      <div class="group-title">LEVEL 3</div><div class="patterns" id="level3"></div>
+    </div>
+  </section>
+
+  <section class="card result" id="result">
+    <div class="mission">MISSION COMPLETE</div>
+    <h2>🔥 NICE GROOVE!</h2>
+    <p>打點任務完成，跟著鼓長Klay累積你的鼓感！</p>
+  </section>
+
+  <section class="card">
+    <div class="topline"><span>MY PROGRESS</span><span>LOCAL SAVE</span></div>
+    <div class="stats">
+      <div class="stat"><b id="sessions">0</b><small>SESSIONS</small></div>
+      <div class="stat"><b id="minutes">0</b><small>MINUTES</small></div>
+      <div class="stat"><b id="daysDone">0</b><small>DAYS DONE</small></div>
+    </div>
+    <div class="note">Your practice record is automatically saved in this browser.</div>
+  </section>
+</div>
+
+<script>
+
+// Member access gate
+(function(){
+  const lockScreen = document.getElementById("lockScreen");
+  const form = document.getElementById("lockForm");
+  const input = document.getElementById("memberPassword");
+  const error = document.getElementById("lockError");
+  const unlock = () => {
+    document.body.classList.remove("locked");
+    lockScreen.remove();
+  };
+  try{
+    if(localStorage.getItem(MEMBER_ACCESS_KEY) === MEMBER_PASSWORD){
+      unlock();
+    }
+  }catch(e){}
+  form.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    if(input.value === MEMBER_PASSWORD){
+      try{localStorage.setItem(MEMBER_ACCESS_KEY, MEMBER_PASSWORD);}catch(e){}
+      unlock();
+    }else{
+      error.textContent = "密碼不正確，請確認本月會員密碼。";
+      input.select();
+    }
+  });
+})();
+
+const PATTERNS={
+  1:["RRRR","LLLL","RLRL","LRLR"],
+  2:["RRLL","LLRR","RLLR","LRRL"],
+  3:["RLRR","LRLL"]
+};
+let current="RLRL", bpm=70, duration=1;
+let running=false, paused=false, beatIndex=0, beatTimer=null, uiTimer=null;
+let audioCtx=null, nextNoteTime=0, endAt=0, totalMs=60000, elapsedBeforePause=0;
+
+const $=id=>document.getElementById(id);
+const storeKey="grooving-room-drum-practice-v1.4";
+const legacyStoreKey="grooving-room-drum-practice-v1.2";
+try{
+  if(!localStorage.getItem(storeKey) && localStorage.getItem(legacyStoreKey)){
+    localStorage.setItem(storeKey,localStorage.getItem(legacyStoreKey));
+  }
+}catch(e){}
+let data={sessions:0,minutes:0,days:0,lastDate:"",dayDates:[]};
+try{data=Object.assign(data,JSON.parse(localStorage.getItem(storeKey)||"{}"));}catch(e){}
+
+function save(){localStorage.setItem(storeKey,JSON.stringify(data));renderStats()}
+function renderStats(){
+  $("sessions").textContent=data.sessions;
+  $("minutes").textContent=data.minutes;
+  $("daysDone").textContent=data.days;
+  $("streak").textContent=data.days;
+}
+function fmt(sec){
+  sec=Math.max(0,Math.ceil(sec));
+  return `${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`;
+}
+function renderPattern(){
+  $("pattern").innerHTML=[...current].map(x=>`<span class="${x.toLowerCase()}">${x}</span>`).join("");
+  $("beats").innerHTML=[...current].map((x,i)=>
+    `<div class="beat" id="beat${i}"><span>${i+1}</span>${x}</div>`).join("");
+  document.querySelectorAll(".pbtn").forEach(b=>b.classList.toggle("selected",b.dataset.p===current));
+}
+function renderPatterns(){
+  Object.entries(PATTERNS).forEach(([level,arr])=>{
+    const root=$("level"+level);root.innerHTML="";
+    arr.forEach(p=>{
+      const b=document.createElement("button");
+      b.className="pbtn";b.dataset.p=p;b.textContent=p;
+      b.onclick=()=>{if(running||paused)return;current=p;renderPattern()};
+      root.appendChild(b);
+    });
+  });
+  renderPattern();
+}
+function updateBpmUI(){
+  $("bpmValue").textContent=bpm;
+  document.querySelectorAll("[data-bpm]").forEach(x=>x.classList.toggle("selected",+x.dataset.bpm===bpm));
+}
+function setDuration(min){
+  duration=min;$("timeValue").textContent=fmt(min*60);
+  if(!running&&!paused){$("timer").textContent=fmt(min*60);$("bar").style.width="0%";$("progressPct").textContent="0%"}
+  document.querySelectorAll(".time").forEach(x=>x.classList.toggle("selected",+x.dataset.min===min));
+}
+async function getAudio(){
+  if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;audioCtx=new AC()}
+  if(audioCtx.state==="suspended"){try{await audioCtx.resume()}catch(e){}}
+  return audioCtx.state==="running";
+}
+function clickSound(accent=false,when=null){
+  if(!audioCtx||audioCtx.state!=="running")return;
+  const t=when??audioCtx.currentTime;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type="sine";o.frequency.value=accent?1100:760;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(accent?.22:.16,t+.005);
+  g.gain.exponentialRampToValueAtTime(.0001,t+.075);
+  o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.08);
+}
+function highlight(){
+  document.querySelectorAll(".beat").forEach(x=>x.classList.remove("active"));
+  const b=$("beat"+beatIndex);if(b)b.classList.add("active");
+  clickSound(beatIndex===0);
+  beatIndex=(beatIndex+1)%4;
+}
+function scheduleBeats(){
+  const interval=60000/bpm;
+  nextNoteTime=audioCtx.currentTime;
+  function scheduler(){
+    if(!running)return;
+    while(nextNoteTime<audioCtx.currentTime+.12){
+      const idx=beatIndex;
+      const when=nextNoteTime;
+      setTimeout(()=>{
+        if(running){document.querySelectorAll(".beat").forEach(x=>x.classList.remove("active"));
+          const b=$("beat"+idx);if(b)b.classList.add("active");}
+      },Math.max(0,(when-audioCtx.currentTime)*1000));
+      clickSound(idx===0,when);
+      beatIndex=(beatIndex+1)%4;
+      nextNoteTime+=interval/1000;
+    }
+    beatTimer=setTimeout(scheduler,25);
+  }
+  scheduler();
+}
+function clearTimers(){clearTimeout(beatTimer);clearInterval(uiTimer);beatTimer=null;uiTimer=null}
+function updateClock(){
+  const left=Math.max(0,endAt-Date.now());
+  $("timer").textContent=fmt(left/1000);
+  const pct=Math.min(100,Math.max(0,(totalMs-left)/totalMs*100));
+  $("bar").style.width=pct+"%";$("progressPct").textContent=Math.round(pct)+"%";
+  if(left<=0)finish();
+}
+async function start(){
+  if(running)return;
+  const audioReady=await getAudio();
+  if(!audioReady){alert("請確認手機的靜音模式已關閉，並允許瀏覽器播放音效。");return;}
+  $("result").style.display="none";
+  if(paused){
+    endAt=Date.now()+Math.max(0,elapsedBeforePause);
+    paused=false;
+  }else{
+    totalMs=duration*60000;endAt=Date.now()+totalMs;beatIndex=0;
+  }
+  running=true;$("status").textContent="PRACTICING";$("start").textContent="Ⅱ PAUSE";
+  scheduleBeats();clearInterval(uiTimer);uiTimer=setInterval(updateClock,100);updateClock();
+}
+function pause(){
+  if(!running)return;
+  elapsedBeforePause=Math.max(0,endAt-Date.now());
+  running=false;paused=true;clearTimers();$("status").textContent="PAUSED";$("start").textContent="▶ RESUME";
+  document.querySelectorAll(".beat").forEach(x=>x.classList.remove("active"));
+}
+function stopReset(){
+  running=false;paused=false;clearTimers();elapsedBeforePause=0;
+  $("status").textContent="READY";$("start").textContent="▶ START";
+  $("timer").textContent=fmt(duration*60);$("bar").style.width="0%";$("progressPct").textContent="0%";
+  document.querySelectorAll(".beat").forEach(x=>x.classList.remove("active"));
+}
+function finish(){
+  if(!running)return;
+  running=false;paused=false;clearTimers();
+  $("status").textContent="COMPLETE";$("start").textContent="▶ START";
+  $("timer").textContent="0:00";$("bar").style.width="100%";$("progressPct").textContent="100%";
+  document.querySelectorAll(".beat").forEach(x=>x.classList.remove("active"));
+  $("result").style.display="block";
+  data.sessions+=1;data.minutes+=duration;
+  const today=new Date().toISOString().slice(0,10);
+  if(!Array.isArray(data.dayDates))data.dayDates=[];
+  if(!data.dayDates.includes(today)){data.dayDates.push(today);data.days=data.dayDates.length}
+  data.lastDate=today;save();
+}
+$("bpm").oninput=e=>{bpm=+e.target.value;updateBpmUI()};
+document.querySelectorAll("[data-bpm]").forEach(b=>b.onclick=()=>{if(!running&&!paused){bpm=+b.dataset.bpm;$("bpm").value=bpm;updateBpmUI()}});
+document.querySelectorAll(".time").forEach(b=>b.onclick=()=>{if(!running&&!paused)setDuration(+b.dataset.min)});
+$("start").onclick=()=>running?pause():start();
+$("reset").onclick=stopReset;
+renderPatterns();renderStats();updateBpmUI();setDuration(1);
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
+</script>
+</body>
+</html>
