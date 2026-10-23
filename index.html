@@ -328,7 +328,7 @@ function clickSound(accent=false,when=null){
   const t=when??audioCtx.currentTime;
   const o=audioCtx.createOscillator(),g=audioCtx.createGain();
   o.type="sine";o.frequency.value=accent?1100:760;
-  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(accent?.50:.35,t+.005);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(accent?.90:.70,t+.005);
   g.gain.exponentialRampToValueAtTime(.0001,t+.075);
   o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.08);
 }
