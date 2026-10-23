@@ -56,9 +56,9 @@ h1 .zh{display:block;color:var(--white);font-size:.52em;letter-spacing:1px;margi
   padding:8px 12px;min-width:54px;cursor:pointer;font-weight:800}
 .chip.selected{border-color:var(--orange);color:var(--orange);background:#19130e}
 .buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-.btn{border:0;border-radius:14px;padding:16px;font-weight:950;font-size:16px;cursor:pointer;min-height:54px;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.btn{border:0;border-radius:14px;padding:16px;font-weight:950;font-size:16px;cursor:pointer;min-height:54px;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-appearance:none;appearance:none}
 .btn:active{transform:scale(.985)}
-.start{background:var(--orange);color:#080808}.secondary{background:#272727;color:#fff}
+.start{background:var(--orange);color:#080808;display:flex;align-items:center;justify-content:center;gap:8px;-webkit-tap-highlight-color:transparent}.start:focus-visible{outline:2px solid var(--yellow);outline-offset:3px}.btn-icon{width:16px;height:16px;display:block;flex:0 0 16px;fill:currentColor}
 .timer{text-align:center;font-size:clamp(42px,8vw,62px);font-weight:950;margin:15px 0 9px;
   font-variant-numeric:tabular-nums}
 .progress-label{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-bottom:6px}
@@ -193,7 +193,7 @@ const MEMBER_ACCESS_KEY = "grooving-room-member-access-v1";
 
     <div class="buttons">
       <button class="btn secondary" id="reset">RESET</button>
-      <button class="btn start" id="start">▶ START</button>
+      <button class="btn start" id="start" type="button"><svg class="btn-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.25v11.5L13 8z"/></svg><span>START</span></button>
     </div>
 
     <div class="timer" id="timer">1:00</div>
@@ -328,7 +328,7 @@ function clickSound(accent=false,when=null){
   const t=when??audioCtx.currentTime;
   const o=audioCtx.createOscillator(),g=audioCtx.createGain();
   o.type="sine";o.frequency.value=accent?1100:760;
-  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(accent?.22:.16,t+.005);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(accent?.50:.35,t+.005);
   g.gain.exponentialRampToValueAtTime(.0001,t+.075);
   o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+.08);
 }
@@ -366,6 +366,14 @@ function updateClock(){
   $("bar").style.width=pct+"%";$("progressPct").textContent=Math.round(pct)+"%";
   if(left<=0)finish();
 }
+function setStartButton(mode){
+  const isPause=mode==="pause";
+  const label=isPause?"PAUSE":mode==="resume"?"RESUME":"START";
+  const icon=isPause
+    ? '<svg class="btn-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h4v12H3zM9 2h4v12H9z"/></svg>'
+    : '<svg class="btn-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.25v11.5L13 8z"/></svg>';
+  $("start").innerHTML=icon+"<span>"+label+"</span>";
+}
 async function start(){
   if(running)return;
   const audioReady=await getAudio();
@@ -377,25 +385,25 @@ async function start(){
   }else{
     totalMs=duration*60000;endAt=Date.now()+totalMs;beatIndex=0;
   }
-  running=true;$("status").textContent="PRACTICING";$("start").textContent="Ⅱ PAUSE";
+  running=true;$("status").textContent="PRACTICING";setStartButton("pause");
   scheduleBeats();clearInterval(uiTimer);uiTimer=setInterval(updateClock,100);updateClock();
 }
 function pause(){
   if(!running)return;
   elapsedBeforePause=Math.max(0,endAt-Date.now());
-  running=false;paused=true;clearTimers();$("status").textContent="PAUSED";$("start").textContent="▶ RESUME";
+  running=false;paused=true;clearTimers();$("status").textContent="PAUSED";setStartButton("resume");
   document.querySelectorAll(".beat").forEach(x=>x.classList.remove("active"));
 }
 function stopReset(){
   running=false;paused=false;clearTimers();elapsedBeforePause=0;
-  $("status").textContent="READY";$("start").textContent="▶ START";
+  $("status").textContent="READY";setStartButton("start");
   $("timer").textContent=fmt(duration*60);$("bar").style.width="0%";$("progressPct").textContent="0%";
   document.querySelectorAll(".beat").forEach(x=>x.classList.remove("active"));
 }
 function finish(){
   if(!running)return;
   running=false;paused=false;clearTimers();
-  $("status").textContent="COMPLETE";$("start").textContent="▶ START";
+  $("status").textContent="COMPLETE";setStartButton("start");
   $("timer").textContent="0:00";$("bar").style.width="100%";$("progressPct").textContent="100%";
   document.querySelectorAll(".beat").forEach(x=>x.classList.remove("active"));
   $("result").style.display="block";
