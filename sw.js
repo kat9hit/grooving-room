@@ -1,4 +1,4 @@
-const CACHE="grooving-room-v1.4.1-github-pages";
+const CACHE="grooving-room-v1.4.3-gain-wake-lock";
 const ASSETS=[
   "./index.html",
   "./manifest.webmanifest",
